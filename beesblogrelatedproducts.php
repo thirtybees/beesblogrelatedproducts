@@ -45,6 +45,9 @@ class BeesBlogRelatedProducts extends Module
         $this->displayName = $this->l('Bees Blog Related Products');
         $this->description = $this->l('thirty bees blog related products widget');
         $this->dependencies = ['beesblog'];
+        $this->need_instance = false;
+        $this->tb_versions_compliancy = '>= 1.0.0';
+        $this->tb_min_version = '1.0.0';
     }
 
     /**

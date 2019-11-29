@@ -1,0 +1,22 @@
+module_name: Bees Blog Related Products
+compatible_versions: 1.0.0+
+author: thirty bees
+category: front office
+tags:
+  - blog
+  - blog module
+  - bees blog
+  - beesblog
+  - beesblogrelatedproducts
+  - widget
+description_short: Related products widget for official thirty bees blog module
+description: description.md
+images:
+  - image-1.png
+gdpr_compliant: true
+license: MIT
+php_version:
+  - 5.6
+  - 7.0
+  - 7.1
+  - 7.2
