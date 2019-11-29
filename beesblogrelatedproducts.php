@@ -31,6 +31,7 @@ class BeesBlogRelatedProducts extends Module
 
     /**
      * BeesBlogRelatedProducts constructor.
+     * @throws PrestaShopException
      */
     public function __construct()
     {
@@ -56,6 +57,7 @@ class BeesBlogRelatedProducts extends Module
      * @return bool
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Adapter_Exception
      */
     public function install()
     {
@@ -83,12 +85,16 @@ class BeesBlogRelatedProducts extends Module
             $this->context->smarty->assign('blog_posts', $posts);
             return $this->display(__FILE__, 'views/templates/hooks/product.tpl');
         }
+        return null;
     }
 
     /**
      * Hook to display related products on blog post page
      *
+     * @param $data
      * @return string
+     *
+     * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      * @throws SmartyException
      */
@@ -102,6 +108,7 @@ class BeesBlogRelatedProducts extends Module
             $this->context->smarty->assign('related_products', $products);
             return $this->display(__FILE__, 'views/templates/hooks/blog_post.tpl');
         }
+        return null;
     }
 
     /**
@@ -131,6 +138,7 @@ class BeesBlogRelatedProducts extends Module
             if ($blogPosts) {
                 foreach ($blogPosts as &$post) {
                     $post['link'] = BeesBlog::getBeesBlogLink('beesblog_post', ['blog_rewrite' => $post['link_rewrite']]);
+                    $post['id'] = $post['id_bees_blog_post'];
                 }
             }
             Cache::store($key, $blogPosts);
