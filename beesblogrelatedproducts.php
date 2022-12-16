@@ -57,7 +57,6 @@ class BeesBlogRelatedProducts extends Module
      * @return bool
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws Adapter_Exception
      */
     public function install()
     {
