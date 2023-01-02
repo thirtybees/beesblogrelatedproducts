@@ -28,6 +28,8 @@ class BeesBlogRelatedProducts extends Module
 {
     const PRODUCT_CACHE_KEY = 'BeesBlogRelatedProducts_PRODUCT_';
     const BLOG_POST_CACHE_KEY = 'BeesBlogRelatedProducts_POST_';
+    const PRODUCT_LIMIT_KEY = 'BBRP_PRODUCT_LIMIT';
+    const BLOG_LIMIT_KEY = 'BBRP_BLOG_LIMIT';
 
     /**
      * BeesBlogRelatedProducts constructor.
@@ -110,6 +112,84 @@ class BeesBlogRelatedProducts extends Module
         return null;
     }
 
+
+    /**
+     * @return string
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
+     */
+    public function displayForm()
+    {
+        $settingsForm = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->l('Settings'),
+                ],
+                'input' => [
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Product limits'),
+                        'name' => static::PRODUCT_LIMIT_KEY,
+                        'desc' => $this->l('Number of related products to be displayed under blog post'),
+                        'required' => true
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Blog limits'),
+                        'name' => static::BLOG_LIMIT_KEY,
+                        'desc' => $this->l('Number of related blog posts to be displayed on product page'),
+                        'required' => true
+                    ],
+                ],
+                'submit' => [
+                    'title' => $this->l('Save'),
+                    'class' => 'btn btn-default pull-right'
+                ]
+            ]
+        ];
+
+        $helper = new HelperForm();
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
+        $helper->title = $this->displayName;
+        $helper->show_toolbar = false;
+        $helper->toolbar_scroll = false;
+        $helper->submit_action = 'submit'.$this->name;
+
+        $helper->fields_value = [
+            static::PRODUCT_LIMIT_KEY => $this->getProductLimit(),
+            static::BLOG_LIMIT_KEY => $this->getBlogLimit()
+        ];
+        return $helper->generateForm([
+            $settingsForm
+        ]);
+    }
+
+    /**
+     * @return string
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws SmartyException
+     */
+    public function getContent()
+    {
+        $output = '';
+        if (Tools::isSubmit('submit'.$this->name)) {
+            $productLimit = static::normalizeLimit(Tools::getValue(static::PRODUCT_LIMIT_KEY, $this->getProductLimit()));
+            $blogLimit = static::normalizeLimit(Tools::getValue(static::BLOG_LIMIT_KEY, $this->getBlogLimit()));
+            Configuration::updateValue(static::PRODUCT_LIMIT_KEY, $productLimit);
+            Configuration::updateValue(static::BLOG_LIMIT_KEY, $blogLimit);
+            $output = $this->displayConfirmation($this->l('Settings has been updated'));
+        }
+
+        return $output.$this->displayForm();
+    }
+
     /**
      * Returns related blog posts for product id
      *
@@ -132,7 +212,7 @@ class BeesBlogRelatedProducts extends Module
                 ->where('pp.id_product = '.$productId)
                 ->where('bbp.active')
                 ->orderBy('bbp.date_add desc')
-                ->limit(3)
+                ->limit($this->getBlogLimit())
             );
             if ($blogPosts) {
                 foreach ($blogPosts as &$post) {
@@ -166,7 +246,7 @@ class BeesBlogRelatedProducts extends Module
                 ->leftJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = '.$lang.Shop::addSqlRestrictionOnLang('pl'))
                 ->leftJoin('image_shop', 'is', 'is.id_product = p.`id_product` AND is.cover=1 AND is.id_shop='.(int) $this->context->shop->id)
                 ->where('pp.id_bees_blog_post = '.$postId)
-                ->limit(3)
+                ->limit($this->getProductLimit())
             );
             if ($products) {
                 foreach ($products as &$product) {
@@ -177,5 +257,47 @@ class BeesBlogRelatedProducts extends Module
             Cache::store($key, $products);
         }
         return Cache::retrieve($key);
+    }
+
+    /**
+     * @return int
+     * @throws PrestaShopException
+     */
+    protected function getProductLimit()
+    {
+        return static::getLimitValue(static::PRODUCT_LIMIT_KEY);
+    }
+
+    /**
+     * @return int
+     * @throws PrestaShopException
+     */
+    protected function getBlogLimit()
+    {
+        return static::getLimitValue(static::BLOG_LIMIT_KEY);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return int
+     * @throws PrestaShopException
+     */
+    protected static function getLimitValue($key)
+    {
+        $value = Configuration::get($key);
+        if ($value === false || $value === null) {
+            return 3;
+        }
+        return static::normalizeLimit($value);
+    }
+
+    /**
+     * @param int $value
+     * @return int
+     */
+    protected static function normalizeLimit($value)
+    {
+        return max((int)$value, 0);
     }
 }
