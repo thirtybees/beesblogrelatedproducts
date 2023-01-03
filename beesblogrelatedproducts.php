@@ -39,7 +39,7 @@ class BeesBlogRelatedProducts extends Module
     {
         $this->name = 'beesblogrelatedproducts';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.2';
+        $this->version = '1.1.0';
         $this->author = 'thirty bees';
 
         $this->bootstrap = true;
