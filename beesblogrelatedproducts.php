@@ -250,8 +250,8 @@ class BeesBlogRelatedProducts extends Module
             );
             if ($products) {
                 foreach ($products as &$product) {
-                    $product['link'] = $this->context->link->getProductLink($product['id_product']);
-                    $product['image'] = $this->context->link->getImageLink($product['id_product'], $product['id_image'], ImageType::getFormatedName('home'));
+                    $product['link'] = $this->context->link->getProductLink((int)$product['id_product']);
+                    $product['image'] = $this->context->link->getImageLink((string)$product['link_rewrite'], (int)$product['id_image'], ImageType::getFormatedName('home'));
                 }
             }
             Cache::store($key, $products);
