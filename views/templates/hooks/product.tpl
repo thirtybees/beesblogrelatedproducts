@@ -33,7 +33,7 @@
                             </a>
                         </h3>
                         <p class="beesblog-related-products-date"><i class="icon icon-time"></i> {$post.published|date_format}</p>
-                        <p class="beesblog-related-products-content">{$post.content|truncate:'200'|strip_tags}</p>
+                        <p class="beesblog-related-products-content">{$post.content|strip_tags|truncate:'200'}</p>
                     </div>
                 </div>
             </article>
